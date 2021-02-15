@@ -5,6 +5,8 @@ import pandas as pd
 import torch
 import torch.optim as optim
 import torch.utils.data
+import torch.nn as nn
+
 
 # imports the model in model.py by name
 from model import BinaryClassifier
@@ -114,9 +116,19 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=1, metavar='S',
                         help='random seed (default: 1)')
     
-    ## TODO: Add args for the three model parameters: input_features, hidden_dim, output_dim
     # Model Parameters
+    parser.add_argument('--input_features', type=int, default=4, metavar='IN',
+                       help='model input features for the model (default: 4)')
+    parser.add_argument('--hidden_dim', type=int, default=10, metavar='H',
+                       help='size of the hidden layer in the model (default: 10)')
+    parser.add_argument('--output_dim', type=int, default=1, metavar='O',
+                        help='output of the model (default=1)')
+    parser.add_argument('--dropout', type=float, default=0.3, metavar='D',
+                        help='percentage of neurons to dropout (default: 0.3)')
     
+    # Optimizer Parameters
+    parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
+                        help='learning rate (default: 0.001)')
     
     # args holds all passed-in arguments
     args = parser.parse_args()
@@ -135,11 +147,11 @@ if __name__ == '__main__':
     ## TODO:  Build the model by passing in the input params
     # To get params from the parser, call args.argument_name, ex. args.epochs or ards.hidden_dim
     # Don't forget to move your model .to(device) to move to GPU , if appropriate
-    model = None
+    model = BinaryClassifier(args.input_features, args.hidden_dim, args.output_dim, args.dropout).to(device)
 
     ## TODO: Define an optimizer and loss function for training
-    optimizer = None
-    criterion = None
+    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    criterion = nn.BCELoss()
 
     # Trains the model (given line of code, which calls the above training function)
     train(model, train_loader, args.epochs, criterion, optimizer, device)
@@ -150,8 +162,9 @@ if __name__ == '__main__':
     with open(model_info_path, 'wb') as f:
         model_info = {
             'input_features': args.input_features,
-            'hidden_dim': <add_arg>,
-            'output_dim': <add_arg>,
+            'hidden_dim': args.hidden_dim,
+            'output_dim': args.output_dim,
+            'dropout': args.dropout
         }
         torch.save(model_info, f)
         
